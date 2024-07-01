@@ -13,4 +13,3 @@ app.include_router(thread_router)
 from hetcom import router as hetcom_router
 app.include_router(hetcom_router)
 
-

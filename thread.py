@@ -682,5 +682,3 @@ def scenario3():
     messages.append('Race over!')
     return {"messages": messages}
 
-
-
