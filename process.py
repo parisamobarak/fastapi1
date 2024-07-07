@@ -4,6 +4,7 @@ import time
 import random
 from multiprocessing import Barrier, Lock
 from datetime import datetime
+from pydantic import BaseModel
 router = APIRouter()
 
 #مثال اول
@@ -115,18 +116,83 @@ def foo(messages):
             messages.append('---> %d ' % i)
         time.sleep(1)
     messages.append("Exiting %s " % name)
-@router.get("/process3_1/")
+
+@router.post("/process3_1/")
+async def scenario1():
+    manager = multiprocessing.Manager()
+    messages = manager.list()
+
+    # Define and start processes
+    background_process = multiprocessing.Process(name='background_process', target=foo, args=(messages,))
+    background_process.daemon = False
+
+    NO_background_process = multiprocessing.Process(name='NO_background_process', target=foo, args=(messages,))
+    NO_background_process.daemon = True
+
+    processes = [background_process, NO_background_process]
+
+    # Start all processes
+    for process in processes:
+        if not process.daemon:
+            process.start()
+
+    # Wait for non-daemon processes to finish
+    for process in processes:
+        if not process.daemon:
+            process.join()
+
+    return {"messages": list(messages)}
+
+@router.post("/process3_2/")
+async def scenario2():
+    manager = multiprocessing.Manager()
+    messages = manager.list()
+
+    # Define and start processes
+    background_process = multiprocessing.Process(name='background_process', target=foo, args=(messages,))
+    background_process.daemon = True
+
+    NO_background_process = multiprocessing.Process(name='NO_background_process', target=foo, args=(messages,))
+    NO_background_process.daemon = False
+
+    processes = [background_process, NO_background_process]
+
+    # Start all processes
+    for process in processes:
+        if not process.daemon:
+            process.start()
+
+    # Wait for non-daemon processes to finish
+    for process in processes:
+        if not process.daemon:
+            process.join()
+
+    return {"messages": list(messages)}
+
+@router.post("/process3_3/")
 async def scenario3():
     manager = multiprocessing.Manager()
     messages = manager.list()
-    background_process = multiprocessing.Process (name='background_process',target=foo, args=(messages,))
-    background_process.daemon= True
-    NO_background_process = multiprocessing.Process (name='NO_background_process',target=foo,args=(messages,))
+
+    # Define and start processes
+    background_process = multiprocessing.Process(name='background_process', target=foo, args=(messages,))
+    background_process.daemon = False
+
+    NO_background_process = multiprocessing.Process(name='NO_background_process', target=foo, args=(messages,))
     NO_background_process.daemon = False
-    background_process.start()
-    NO_background_process.start()
-    background_process.join()
-    NO_background_process.join()
+
+    processes = [background_process, NO_background_process]
+
+    # Start all processes
+    for process in processes:
+        if not process.daemon:
+            process.start()
+
+    # Wait for non-daemon processes to finish
+    for process in processes:
+        if not process.daemon:
+            process.join()
+
     return {"messages": list(messages)}
 
 
