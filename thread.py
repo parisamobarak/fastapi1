@@ -626,6 +626,7 @@ def scenario1():
     for i in range(num_runners):
         threads.append(threading.Thread(target=runner))
         threads[-1].start()
+
     for thread in threads:
         thread.join()
     messages.append('Race over!')
